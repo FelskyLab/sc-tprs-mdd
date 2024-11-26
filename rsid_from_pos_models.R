@@ -1,5 +1,4 @@
-setwd("C:/Users/mding/Desktop/BCB330/sc-tprs-mdd")
-
+#setwd("C:/Users/mding/Desktop/BCB330/sc-tprs-mdd")
 if (!require("BiocManager", quietly = TRUE)){
    install.packages("BiocManager")
 }
@@ -15,7 +14,10 @@ if (!require("stringr", quietly = TRUE)){
   install.packages("stringr")
 }
 library(stringr)
-
+if (!require("stringi", quietly = TRUE)){
+  install.packages("stringi")
+}
+library(stringr)
 if (!require("AcidGenomes", quietly = TRUE)){
   install.packages(pkgs = "AcidGenomes",
                    repos = c("https://r.acidgenomics.com",
@@ -67,7 +69,8 @@ ranges2label <- function(ranges, genes, label) {
 
 
 #load in *.db file
-filename <- "dendritic_cell.db"
+#filename <- "dendritic_cell.db"
+filename <- commandArgs(trailingOnly = TRUE)
 sqlite.driver <- dbDriver("SQLite")
 db <- dbConnect(sqlite.driver, dbname = filename)
 
@@ -103,11 +106,14 @@ N <- length(snps@elementMetadata@listData[["gene"]])
 matching_mask <- vector(length = N)
 
 #longest step, try to optimize
-for (i in 1:N){
-  pBar(i, N)
-  matching_mask[i] <- grepl(snps@elementMetadata@listData[["gene"]][i], snps$geneSymbols[i], fixed = TRUE)
+matching_mask <- mapply(function(snp, gene) +(stri_detect_fixed(snp, gene)),
+                        as.vector(snps$geneSymbols), snps@elementMetadata@listData[["gene"]])
 
-}
+#for (i in 1:N){
+#  pBar(i, N)
+#  matching_mask[i] <- grepl(snps@elementMetadata@listData[["gene"]][i], snps$geneSymbols[i], fixed = TRUE)
+
+#}
 sum(matching_mask)/length(snps)
 #remove these incongruent rows
 msk_snps <- snps[matching_mask,]
@@ -131,7 +137,10 @@ msk_snps$rsid <- ranges2label(msk_snps, rsid, "RefSNP_id")
 new_model <- as.data.frame(msk_snps@elementMetadata@listData)
 new_model <- new_model[,-c(1, 7)]
 
-
+out_filename <- paste0(dirname(filename),"/modified_models/mod_",basename(filename))
+con <- dbConnect(SQLite(), out_filename)
+dbWriteTable(con, "weights", df)
+dbDisconnect(con)
 # rsid_list <- list(chr = rep(as.numeric(rsid@seqnames@values), times = rsid@seqnames@lengths),
 #                       pos = rsid@ranges@pos,
 #                       ref_allele = rsid@elementMetadata@listData[["ref_allele"]],
@@ -199,3 +208,7 @@ new_model <- new_model[,-c(1, 7)]
 #       filters = c('chromosomal_region'),
 #       values = coords[10:100],
 #       mart = snpMart)
+
+install.packages("installr")
+library(installr)
+updateR()
