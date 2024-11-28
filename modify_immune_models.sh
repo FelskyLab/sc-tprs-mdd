@@ -21,9 +21,10 @@ source /external/rprshnas01/netdata_kcni/dflab/.bashrc.d/miniforge.bashrc
 #paths to env variables
 export MODELS=~/sc-tprs-mdd/immune_cell_models
 export PATH=~/sc-tprs-mdd
+sed $'s/\r$//' ./rsid_from_pos_models.R > ./rsid_from_pos_models.unix.R
 
 for filename in $MODELS/*.db; do
   #Run rsid_from_pos_models.R
-  Rscript $PATH/rsid_from_pos_models.R $filename
+  $PATH/rsid_from_pos_models.unix.R $filename
   
 done

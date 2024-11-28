@@ -1,35 +1,56 @@
+#!/external/rprshnas01/kcni/mding/R-4.4.2/bin/Rscript
 #setwd("C:/Users/mding/Desktop/BCB330/sc-tprs-mdd")
-if (!require("BiocManager", quietly = TRUE)){
+if (!requireNamespace("BiocManager", quietly = TRUE)){
    install.packages("BiocManager")
+  BiocManager::install(version = "3.20", ask = FALSE)
 }
-BiocManager::install(version = "3.20", ask = FALSE)
-BiocManager::install(c("GenomicFeatures", "AnnotationHub",
-                       "BSgenome.Hsapiens.UCSC.hg38",
-                       "SNPlocs.Hsapiens.dbSNP155.GRCh38"), force = FALSE,
-                     ask = FALSE)
+
+if (!requireNamespace("GenomicFeatures", quietly = TRUE)){
+  BiocManager::install("GenomicFeatures", ask = FALSE)
+}
+if (!requireNamespace("AnnotationHub", quietly = TRUE)){
+  BiocManager::install("AnnotationHub", ask = FALSE)
+}
+if (!requireNamespace("BSgenome", quietly = TRUE)){
+  BiocManager::install("BSgenome", ask = FALSE)
+}
+library(BSgenome)
+if (!requireNamespace("BSgenome.Hsapiens.UCSC.hg38", quietly = TRUE)){
+  BiocManager::install("BSgenome.Hsapiens.UCSC.hg38", ask = FALSE)
+}
+if (!requireNamespace("SNPlocs", quietly = TRUE)){
+  BiocManager::install("SNPlocs", ask = FALSE)
+}
+library(SNPlocs)
+if (!requireNamespace("SNPlocs.Hsapiens.dbSNP155.GRCh38", quietly = TRUE)){
+  BiocManager::install("SNPlocs.Hsapiens.dbSNP155.GRCh38", ask = FALSE)
+}
 library(BSgenome.Hsapiens.UCSC.hg38)
 library(SNPlocs.Hsapiens.dbSNP155.GRCh38)
 
-if (!require("stringr", quietly = TRUE)){
+if (!requireNamespace("stringr", quietly = TRUE)){
   install.packages("stringr")
 }
 library(stringr)
-if (!require("stringi", quietly = TRUE)){
+if (!requireNamespace("stringi", quietly = TRUE)){
   install.packages("stringi")
 }
 library(stringr)
-if (!require("AcidGenomes", quietly = TRUE)){
+if (!requireNamespace("AcidGenomes", quietly = TRUE)){
   install.packages(pkgs = "AcidGenomes",
                    repos = c("https://r.acidgenomics.com",
                              BiocManager::repositories()),
                   dependencies = TRUE)
 }
 library(AcidGenomes)
-if (!require("RSQLite", quietly = TRUE)){
+if (!requireNamespace("RSQLite", quietly = TRUE)){
   install.packages("RSQLite")
 }
 library(RSQLite)
-
+if (!requireNamespace("DBI", quietly = TRUE)){
+  install.packages("DBI")
+}
+library(DBI)
 #some functions
 cat("  Defining pBar() ...\n")
 pBar <- function(i, l, nCh = 50) {
@@ -139,7 +160,7 @@ new_model <- new_model[,-c(1, 7)]
 
 out_filename <- paste0(dirname(filename),"/modified_models/mod_",basename(filename))
 con <- dbConnect(SQLite(), out_filename)
-dbWriteTable(con, "weights", df)
+dbWriteTable(con, "weights", new_model)
 dbDisconnect(con)
 # rsid_list <- list(chr = rep(as.numeric(rsid@seqnames@values), times = rsid@seqnames@lengths),
 #                       pos = rsid@ranges@pos,
@@ -208,7 +229,3 @@ dbDisconnect(con)
 #       filters = c('chromosomal_region'),
 #       values = coords[10:100],
 #       mart = snpMart)
-
-install.packages("installr")
-library(installr)
-updateR()

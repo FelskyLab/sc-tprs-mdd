@@ -1,0 +1,94 @@
+## ABCD Genetic Data Release 2020.08
+
+These files are part of the Adolescent Brain Cognitive Development Studies Annual Data Release 3.0.
+
+This readme contains basic information for the ABCD genetic data.
+
+## Summary of the genotype bulk release
+
+A. New release of genotype calls in PLINK format.
+   - reclustered data that included in release 2.0
+   - inclusion of new data entry, now sample size up to 11099 unique individuals.
+B. Release of LRR and BAF from well QCed ABCD genotype calls for researchers who want to do CNV calls
+C. Release of TOPMed Imputed ABCD data in VCF format 
+
+## Detail information of genotype data
+
+1. genotyping platform
+    Affymetrix NIDA SmokeScreen Array
+    The sample preparation and genotyping are performed by Rutgers RUCDR. This includes:
+      - extraction kit: Chemagen bead based/Chemagic STAR DNA Saliva4k Kit (CMG-1755-A)
+      - processing: DNA fragmentation, labeling, ligation & hybridization
+      - equipment: Affimetrix GeneTitan Instrument.
+    Additional information can be found in the NIMH experiment description #1194.
+    The smokescreen array contains 733,293 SNPs (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4769529/)
+
+2. genotyping data:
+   After last release 2.0, we identified several issues regarding to the genotyping data. The new release
+   is now based on genotyping reclustering of entire ABCD samples, spanning in 6 different batches (see 
+   ABCD_release3.0_.batch_info.txt). To maximize the number of good QCed samples, we included both samples
+   from Saliva and Whole Blood, whichever has a). higher successful calls, b). higher none-missing, c). matched 
+   genetic sex, and d). less excessive IBS. The quality control is performed as the following: 
+
+   - RUCDR has performed DNA quality controls based on calling signals and variant call rates.
+   - DAIRC of ABCD performed the subsequent study-based QC process, following the recommendation
+     of Ricopili pipeline (https://doi.org/10.1093/bioinformatics/btz633).
+   
+   The QCed genotyping data is in binary PLINK format, containing 11099 unique individuals with 516598 genetic 
+   variants. All genetic variants were referenced in positive strand. The data files contain:
+  
+   - ABCD_release_3.0_QCed.bed
+   - ABCD_release_3.0_QCed.fam
+   - ABCD_release_3.0_QCed.bim
+
+   The FID is the sample collection ID while the IID is the ABCD study ID. 
+
+   Summary of the difference comparing to release 2.0:
+   - The sample issues have been resolved. The correct assignments are applied.
+   - Genotypes were reclustered
+   - Sample size increased to 11099 individuals
+
+3. Log R Ratio and B Allele Frequencies
+   To enable reseachers to call CNVs using ABCD genotype data, we have generated the LRR and BAF from the
+   intensity files of genotyping calls from Affymetrix Smokescreen array. The pipeline is identical to the
+   process described in the supplement materials of Kendall et al. 2016 
+   (https://doi.org/10.1016/j.biopsych.2016.08.014).
+   The LRR and BAF were derived from five batches of genotype calls, including 11088 well QCed individuals.
+   The batch information can be found in ABCD_release3.0_.batch_info.txt. The data files contain: 
+
+   - *.sample         # The sample information
+   - *.probe.info     # The probe information and AB definition
+   - *_lrr.txt.gz     # LRR as a M by N numeric matrix, M as the probe and N as the sample. 
+   - *_baf.txt.gz     # BAF as a M by N numeric matrix, M as the probe and N as the sample.
+
+   There are five batches as described in the prefix, including four Saliva batches and one Whole Blood batch.
+  
+4. ABCD imputed genotype data with TOPMED reference.
+   In release 3.0, we provided imputed whole genome data to the research community. The released files include
+   dosage files in VCF format and imputation INFO files. No post-imputation QC is performed. 
+   There were two subjects we recommend to remove from the analyses due to subject matching issue (see SUBJ_QC_BAD.txt). The sample ID in the VCF format is the concatenation of both Collection ID and Study ID. 
+
+   The imputation was  performed using QCed genotype data with the process described as the following:
+   - Imputation was performed using the TOPMed imputation server. Pre-imputation steps were followed as instructed at https://topmedimpute.readthedocs.io/en/latest/prepare-your-data/. These steps involved a) calculating allele frequencies using PLINK v1.9, b) executing the HRC-1000G-check-bim.pl script that checks .bim files against HRC/1000G for consistencies, c) conversion to VCF files using plink v1.9 and d) running the checkVCF.py to verify that VCF conversion was successfully performed. The VCF files were then uploaded to the TOPMed Imputation Server and imputation was performed using mixed ancestry and Eagle v2.4 phasing. 
+
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+ 
