@@ -24,7 +24,7 @@ if (!requireNamespace("org.Hs.eg.db", quietly = TRUE)){
 }
 library("org.Hs.eg.db")
 deg$ensembl_gene_id <- mapIds(org.Hs.eg.db,
-                  keys=degm$gene, 
+                  keys=deg$gene, 
                   column="ENSEMBL",
                   keytype="SYMBOL",
                   multiVals="first")
@@ -50,7 +50,7 @@ annotLookup <- getBM(mart = mart, attributes = c('hgnc_symbol',
                                                  'ensembl_gene_id'), 
                      uniqueRows = TRUE)
 
-deg$ensembl_gene_id2 <- annotLookup$ensembl_gene_id[match(unlist(degm$gene), 
+deg$ensembl_gene_id2 <- annotLookup$ensembl_gene_id[match(unlist(deg$gene), 
                                                            annotLookup$hgnc_symbol)]
 
 deg$ensembl_gene_id[is.na(deg$ensembl_gene_id)] <- 
@@ -62,3 +62,14 @@ deg$gene[is.na(deg$ensembl_gene_id)]
 #manualf <- c("ENSG00000265737", "")
 
 write.xlsx(file = "Wittenberg_deg.xlsx", x = deg)
+
+
+rib_genes <- read.delim("/external/rprshnas01/kcni/mding/sc-tprs-mdd/ribo_genes.txt", header = FALSE)
+rib_genes$ensembl_gene_id <- mapIds(org.Hs.eg.db,
+                              keys=rib_genes$V1, 
+                              column="ENSEMBL",
+                              keytype="SYMBOL",
+                              multiVals="first")
+colnames(rib_genes)[1] <- "gene"
+write.table(rib_genes, "/external/rprshnas01/kcni/mding/sc-tprs-mdd/ribo_genes_ensembl.txt",
+            row.names = FALSE, quote = FALSE)

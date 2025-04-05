@@ -61,3 +61,6 @@ error
 
 #folders
 */
+
+*.gz
+*.zip

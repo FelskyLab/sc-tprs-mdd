@@ -42,15 +42,7 @@ if (!requireNamespace("AcidGenomes", quietly = TRUE)){
                              BiocManager::repositories()),
                   dependencies = TRUE)
 }
-library(AcidGenomes)
-if (!requireNamespace("RSQLite", quietly = TRUE)){
-  install.packages("RSQLite")
-}
-library(RSQLite)
-if (!requireNamespace("DBI", quietly = TRUE)){
-  install.packages("DBI")
-}
-library(DBI)
+
 #some functions
 cat("  Defining pBar() ...\n")
 pBar <- function(i, l, nCh = 50) {
@@ -91,56 +83,11 @@ ranges2label <- function(ranges, genes, label) {
 
 #load in *.db file
 #filename <- "dendritic_cell.db"
-filename <- commandArgs(trailingOnly = TRUE)
-sqlite.driver <- dbDriver("SQLite")
-db <- dbConnect(sqlite.driver, dbname = filename)
+filename <- "/external/rprshnas01/kcni/mding/abcd/workspace/mding/abcd_data/abcd_rsids.txt"
 
-model <- dbReadTable(db,"weights")
-dbDisconnect(db)
+model <- read.delim(filename, header = FALSE, sep = "\n", dec = ".")
+model <- model[-c(1,2),]
 
-# #investigate the duplicate values
-# dups <- model[(duplicated(model$varID) | duplicated(model$varID, fromLast=TRUE)),]
-# dups <- dups[(order(dups$varID)),]
-
-#format chr and position
-model_chr <- str_remove(str_extract(model$varID, "chr[0-9]+"), "chr")
-model_pos <- str_remove(str_extract(model$varID, "_[0-9]+"), "_")
-
-coords <- paste0(model_chr, ":",
-                 model_pos, "-",
-                 model_pos)
-
-#reference Ensembl gene names
-gff <- makeGRangesFromEnsembl(organism = "Homo sapiens", level = "genes",
-                              genomeBuild = "GRCh38")
-#create object with model data to query with
-snps <- GRanges(coords,
-  alleles_as_ambig = mergeIUPACLetters(paste0(model$ref_allele, model$eff_allele)),
-  gene = model$gene, varID = model$varID,
-  ref_allele = model$ref_allele, eff_allele = model$eff_allele,
-  weight = model$weight)
-#align snps with Ensembl genes
-snps$geneSymbols <- ranges2label(snps, gff, "geneId")
-
-#Find indices where the gene doesn't match the chr:position
-N <- length(snps@elementMetadata@listData[["gene"]])
-matching_mask <- vector(length = N)
-
-#longest step, try to optimize
-matching_mask <- mapply(function(snp, gene) +(stri_detect_fixed(snp, gene)),
-                        as.vector(snps$geneSymbols), snps@elementMetadata@listData[["gene"]])
-
-#for (i in 1:N){
-#  pBar(i, N)
-#  matching_mask[i] <- grepl(snps@elementMetadata@listData[["gene"]][i], snps$geneSymbols[i], fixed = TRUE)
-
-#}
-sum(matching_mask)/length(snps)
-#remove these incongruent rows
-msk_snps <- snps[matching_mask,]
-msk_model <- model[matching_mask,]
-
-#genome with rsid annotations
 bsgenome <- BSgenome.Hsapiens.UCSC.hg38
 seqlevelsStyle(bsgenome) <- "NCBI"
 #get the rsids matching snps we have
